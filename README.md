@@ -1,26 +1,28 @@
-# 🏥 Management system for a health center / private clinic
+![Clinique Santé Banner](./client/public/white.png)
 
-School-Management SAAS est une plateforme web moderne conçue pour aider les établissements scolaires à gérer efficacement leurs opérations quotidiennes. Elle permet la gestion des élèves, enseignants, emplois du temps, résultats académiques, et bien plus, dans une interface intuitive et réactive.
+# 🏥 Management System for a Health Center / Private Clinic HMS
+
+Ce projet est une plateforme web moderne conçue pour aider les centres de santé et les cliniques privées à gérer efficacement leurs opérations quotidiennes. Elle offre des fonctionnalités complètes pour la gestion des patients, des rendez-vous, des consultations, des prescriptions, des stocks de médicaments, et bien plus encore, à travers une interface intuitive et responsive.
 
 ---
 
 ## 🚀 Fonctionnalités
 
-- 🔐 Authentification sécurisée pour administrateurs, enseignants, et étudiants
+- 🔐 Authentification sécurisée pour administrateurs, médecins, infirmiers et réceptionnistes
 
-- 🧑‍🏫 Gestion des utilisateurs (étudiants, enseignants, personnel)
+- 👩‍⚕️ Gestion des utilisateurs (patients, médecins, personnel médical, administrateurs)
 
-- 🏫 Gestion des classes, matières et salles
+- 📅 Gestion des rendez-vous avec calendrier dynamique
 
-- 📅 Emploi du temps dynamique
+- 🩺 Analyse des symptômes et diagnostic lors des consultations
 
-- 📊 Suivi des notes et bulletins de résultats
+- 💊 Gestion des prescriptions médicales
 
-- 📬 Système de messagerie interne
+- 📦 Gestion du stock de médicaments
 
-- 📝 Gestion des inscriptions et paiements
+- 🧾 Suivi des dossiers médicaux des patients
 
-- 📦 Tableaux de bord analytiques
+- 📊 Tableaux de bord analytiques pour visualiser les performances et activités
 
 - 🌍 Interface responsive accessible sur mobile, tablette et desktop
 
@@ -32,10 +34,14 @@ School-Management SAAS est une plateforme web moderne conçue pour aider les ét
   - React.js – Framework moderne pour construire des interfaces utilisateur interactives
   - Tailwind CSS – Framework CSS utilitaire pour un design rapide et réactif
   - Material UI – Librairie de composants pour une expérience utilisateur fluide
+
 - **Backend :**
   - Nest.js – Framework Node.js puissant et modulaire pour des API robustes
+  - TypeORM avec MongoDB – ORM utilisé pour structurer les données NoSQL dans MongoDB
+
 - **Base de données :**
   - MongoDB – Base de données NoSQL performante, idéale pour les applications web modernes
+
 - **Autres outils :**
   - Git & GitHub – Pour le versionnement et la collaboration
   - JIRA – Pour la gestion agile du projet
@@ -45,8 +51,8 @@ School-Management SAAS est une plateforme web moderne conçue pour aider les ét
 
 ## 📂 Structure du projet
 ```bash
-Management system for a health center/ 
-│── frontend/ 
+Health-center-management/ 
+│── client/ 
 │   ├── node_modules/
 │   ├── public/          
 │   ├── src/
@@ -55,16 +61,17 @@ Management system for a health center/
 │   │   ├── pages
 │   │   ├── routes
 │   │   ├── app.css
-│   │   ├── app.jsx
+│   │   ├── app.tsx
 │   │   ├── index.css
-│   │   ├── index.jsx
+│   │   ├── main.tsx
 │   ├── .env
 │   ├── index.html
 │   ├── package.json
-│   ├── vite.config.js  
-│   ├── postcss.config.js  
-│   ├── tailwind.config.js  
-│── backend/ 
+│   ├── vite.config.ts  
+│   ├── tsconfig.app.json  
+│   ├── tsconfig.node.json  
+│   ├── tsconfig.json  
+│── server/ 
 │   ├── dist/
 │   ├── node_modules/
 │   ├── src/
@@ -89,5 +96,5 @@ Management system for a health center/
 ```
 
 ## ✍️ Auteur
-  - Nom: RAFARALAHY Savaka Lucien
-  - Email: savakalucien@gmail.com
+- Nom: RAFARALAHY Savaka Lucien
+- Email: savakalucien@gmail.com
