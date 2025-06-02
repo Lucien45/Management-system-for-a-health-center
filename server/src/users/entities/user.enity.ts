@@ -1,15 +1,16 @@
+import { ObjectId } from 'mongodb';
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ObjectIdColumn,
 } from 'typeorm';
 
 @Entity('user')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @ObjectIdColumn()
+  _id: ObjectId;
 
   @Column({ type: 'varchar', nullable: false })
   username: string;
@@ -21,7 +22,10 @@ export class User {
   email: string;
 
   @Column({ type: 'varchar', nullable: true })
-  phone: string;
+  phone?: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  profile?: string | null;
 
   @Column({
     type: 'enum',
