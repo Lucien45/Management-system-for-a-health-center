@@ -1,8 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as express from 'express';
+import { join } from 'path';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser());
+
+  app.use('/media', express.static(join(__dirname, '..', 'media')));
+
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,POST,PATCH,PUT,DELETE',
+    credentials: true,
+  });
 
   const port = parseInt(process.env.PORT || '3030', 10);
   await app.listen(port);
