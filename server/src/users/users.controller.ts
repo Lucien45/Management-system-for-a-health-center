@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
   Body,
@@ -7,6 +8,9 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  Res,
+  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -17,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { JwtAuthGuard } from './middleware/auth.guard';
+import { Response } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -47,7 +52,10 @@ export class UsersController {
   }
 
   @Post('login')
-  async login(@Body() body: { identification: string; password: string }) {
+  async login(
+    @Body() body: { identification: string; password: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { identification, password } = body;
     if (!identification || typeof identification !== 'string') {
       throw new BadRequestException(
@@ -59,7 +67,31 @@ export class UsersController {
         'Le champ "password" est requis et doit être une chaîne.',
       );
     }
-    return this.usersService.login({ identifier: identification, password });
+
+    const result = await this.usersService.login({
+      identifier: identification,
+      password,
+    });
+
+    // 🍪 Cookie du token sécurisé
+    res.cookie('authToken', result.token, {
+      httpOnly: true,
+      secure: true, // en prod avec HTTPS
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    // 🍪 Cookie des infos utilisateur simplifiées (non sécurisé, accessible par JS)
+    res.cookie('authUser', JSON.stringify(result.user), {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    // ✅ Ne rien renvoyer, ou juste un OK
+    return { message: 'Connexion réussie', user: result };
+    // return this.usersService.login({ identifier: identification, password });
   }
 
   @Get()
@@ -105,5 +137,13 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req: any) {
+    const userId = String(req.user?.sub);
+    if (!userId) throw new UnauthorizedException('Utilisateur non authentifié');
+    return this.usersService.getUserById(userId);
   }
 }
