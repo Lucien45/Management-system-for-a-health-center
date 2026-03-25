@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { isAuthenticated } from '../context/AuthContext';
 import Page404 from '../pages/other/Page404';

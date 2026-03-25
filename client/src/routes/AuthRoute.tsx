@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom';
 import Page404 from '../pages/other/Page404';
 import AuthPage from '../pages/auth/AuthPage';
