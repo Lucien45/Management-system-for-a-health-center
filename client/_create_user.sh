@@ -6,6 +6,6 @@ curl -X POST http://localhost:3030/users/register \
     -d '{ 
         "email" : "admin@gmail.com", 
         "password" : "admin" ,
-        "usrname": "admin",
+        "username": "admin",
         "role": "admin"
     }'

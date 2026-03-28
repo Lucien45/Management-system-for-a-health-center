@@ -16,6 +16,14 @@ export class CreateUserDto {
   username: string;
 
   @IsString()
+  @IsOptional()
+  nom?: string;
+
+  @IsString()
+  @IsOptional()
+  prenom?: string;
+
+  @IsString()
   @IsNotEmpty()
   password: string;
 
@@ -25,22 +33,19 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsPhoneNumber(undefined, { message: 'Numéro de téléphone invalide' })
-  phone?: string;
+  telephone?: string;
 
   @IsOptional()
   @IsString()
-  profile?: string;
+  profile?: string | null;
 
   @IsOptional()
-  @IsEnum(['admin', 'doctor', 'nurse', 'receptionist', 'autre'])
+  @IsEnum(['admin', 'doctor', 'nurse', 'receptionist'])
   role?: string;
 
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
-
-  @IsOptional()
-  lastLogin?: Date;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

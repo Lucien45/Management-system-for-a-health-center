@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.enity';
 import { JwtModule } from '@nestjs/jwt';
+import { SupabaseModule } from 'src/supabase/supabase.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JwtModule } from '@nestjs/jwt';
         signOptions: { expiresIn: '1d' },
       }),
     }),
+    SupabaseModule,
   ],
   providers: [UsersService],
   controllers: [UsersController],

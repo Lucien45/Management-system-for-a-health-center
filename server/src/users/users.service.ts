@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   BadRequestException,
   Injectable,
@@ -10,7 +11,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { ObjectId } from 'mongodb';
+import { SupabaseService } from 'src/supabase/supabase.service';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly supabaseService: SupabaseService,
   ) {}
 
   async createUser(
@@ -33,25 +35,33 @@ export class UsersService {
 
     const hashedPassword: string = await bcrypt.hash(password, 10);
 
+    let profilePath: string | null = null;
+    if (file) {
+      const fileName = `hms_profiles/${Date.now()}-${file.originalname}`;
+      const { error } = await this.supabaseService.uploadFile(
+        fileName,
+        file.buffer,
+      );
+
+      if (error) throw new Error('Erreur upload profile ➜ ' + error.message);
+
+      profilePath = fileName;
+    }
+
     const user = new User();
     Object.assign(user, dto);
     user.password = hashedPassword;
     user.date_creation = new Date();
     user.lastLogin = null;
-    user.profile = file ? `media/profiles/${file.filename}` : null;
+    user.profile = file ? profilePath : null;
     return this.userRepository.save(user);
   }
 
   async login(data: { identifier: string; password: string }) {
     const { identifier, password } = data;
-    let user = await this.userRepository.findOne({
-      where: { email: identifier },
+    const user = await this.userRepository.findOne({
+      where: [{ email: identifier }, { username: identifier }],
     });
-    if (!user) {
-      user = await this.userRepository.findOne({
-        where: { username: identifier },
-      });
-    }
 
     if (!user) {
       throw new UnauthorizedException(
@@ -70,13 +80,13 @@ export class UsersService {
     user.lastLogin = new Date();
     await this.userRepository.save(user);
 
-    const payload = { sub: user._id, email: user.email };
+    const payload = { sub: user.id, email: user.email };
     const token = this.jwtService.sign(payload);
 
     return {
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         profile: user?.profile,
@@ -89,19 +99,18 @@ export class UsersService {
     return await this.userRepository.find();
   }
 
-  async getUserById(id: string): Promise<User> {
-    const objectId = new ObjectId(id);
+  async getUserById(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({
-      where: { _id: objectId },
+      where: { id: userId },
     });
     if (!user) {
-      throw new NotFoundException('Utilisateur non trouvé');
+      throw new NotFoundException(`User avec ID ${userId} est introuvable`);
     }
     return user;
   }
 
   async updateUser(
-    userId: string,
+    userId: number,
     dto: UpdateUserDto,
     file?: Express.Multer.File,
   ): Promise<User> {
@@ -109,8 +118,19 @@ export class UsersService {
     if (!user) {
       throw new Error('Utilisateur non trouvé');
     }
+
+    let profilePath = user?.profile;
+
     if (file) {
-      dto.profile = `media/profiles/${file.filename}`;
+      // dto.profile = `media/profiles/${file.filename}`;
+      const fileName = `hms_profiles/${Date.now()}-${file.originalname}`;
+      const { error } = await this.supabaseService.uploadFile(
+        fileName,
+        file.buffer,
+      );
+      if (error) throw new Error('Erreur upload profile ➜ ' + error.message);
+
+      profilePath = fileName;
     }
 
     if (dto.password && dto.password.trim() !== '') {
@@ -123,11 +143,13 @@ export class UsersService {
       delete dto.password;
     }
 
+    dto.profile = profilePath;
+
     Object.assign(user, dto);
     return this.userRepository.save(user);
   }
 
-  async deleteUser(userId: string): Promise<void> {
+  async deleteUser(userId: number): Promise<void> {
     const user = await this.getUserById(userId);
     if (!user)
       throw new NotFoundException(`User avec ID ${userId} est introuvable`);

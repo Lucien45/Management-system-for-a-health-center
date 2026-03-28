@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
@@ -9,7 +10,6 @@ import {
   Patch,
   Post,
   Req,
-  Res,
   UnauthorizedException,
   UploadedFile,
   UseGuards,
@@ -18,8 +18,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import * as multer from 'multer';
 import { JwtAuthGuard } from './middleware/auth.guard';
 import { Response } from 'express';
 
@@ -29,18 +28,8 @@ export class UsersController {
 
   @Post('register')
   @UseInterceptors(
-    FileInterceptor('profile', {
-      storage: diskStorage({
-        destination: './media/profiles',
-        filename: (_, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(
-            null,
-            `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`,
-          );
-        },
-      }),
+    FileInterceptor('hms_profile', {
+      storage: multer.memoryStorage(),
     }),
   )
   async create(
@@ -52,11 +41,9 @@ export class UsersController {
   }
 
   @Post('login')
-  async login(
-    @Body() body: { identification: string; password: string },
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async login(@Body() body: any) {
     const { identification, password } = body;
+
     if (!identification || typeof identification !== 'string') {
       throw new BadRequestException(
         'Le champ "identification" est requis et doit être une chaîne.',
@@ -68,30 +55,7 @@ export class UsersController {
       );
     }
 
-    const result = await this.usersService.login({
-      identifier: identification,
-      password,
-    });
-
-    // 🍪 Cookie du token sécurisé
-    res.cookie('authToken', result.token, {
-      httpOnly: true,
-      secure: true, // en prod avec HTTPS
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    // 🍪 Cookie des infos utilisateur simplifiées (non sécurisé, accessible par JS)
-    res.cookie('authUser', JSON.stringify(result.user), {
-      httpOnly: false,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    // ✅ Ne rien renvoyer, ou juste un OK
-    return { message: 'Connexion réussie', user: result };
-    // return this.usersService.login({ identifier: identification, password });
+    return this.usersService.login({ identifier: identification, password });
   }
 
   @Get()
@@ -102,29 +66,19 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getUserById(@Param('id') id: string) {
+  async getUserById(@Param('id') id: number) {
     return this.usersService.getUserById(id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
-    FileInterceptor('profile', {
-      storage: diskStorage({
-        destination: './media/profiles',
-        filename: (_, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(
-            null,
-            `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`,
-          );
-        },
-      }),
+    FileInterceptor('hms_profile', {
+      storage: multer.memoryStorage(),
     }),
   )
   async updateUser(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() dto: UpdateUserDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
@@ -135,14 +89,14 @@ export class UsersController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async deleteUser(@Param('id') id: string) {
+  async deleteUser(@Param('id') id: number) {
     return this.usersService.deleteUser(id);
   }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req: any) {
-    const userId = String(req.user?.sub);
+    const userId = Number(req.user?.sub);
     if (!userId) throw new UnauthorizedException('Utilisateur non authentifié');
     return this.usersService.getUserById(userId);
   }

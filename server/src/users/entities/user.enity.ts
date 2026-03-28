@@ -1,19 +1,24 @@
-import { ObjectId } from 'mongodb';
 import {
   Entity,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ObjectIdColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity('user')
 export class User {
-  @ObjectIdColumn()
-  _id: ObjectId;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ type: 'varchar', nullable: false })
   username: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  nom: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  prenom: string;
 
   @Column({ type: 'varchar', nullable: false })
   password: string;
@@ -22,14 +27,20 @@ export class User {
   email: string;
 
   @Column({ type: 'varchar', nullable: true })
-  phone?: string | null;
+  civilite: string;
+
+  @Column({ type: 'date', nullable: true, default: null })
+  date_naissance: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  telephone?: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   profile?: string | null;
 
   @Column({
     type: 'enum',
-    enum: ['admin', 'doctor', 'nurse', 'receptionist'],
+    enum: ['admin', 'doctor', 'nurse', 'receptionist', 'autre'],
     default: 'autre',
   })
   role: string;
@@ -45,7 +56,7 @@ export class User {
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })
-  updatedAt: Date;
+  date_mise_jour: Date;
 
   @Column({ type: 'timestamp', nullable: true })
   lastLogin: Date | null;
